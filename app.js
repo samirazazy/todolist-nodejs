@@ -8,7 +8,8 @@ app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-let items = [];
+let items = ["Pay Food", "Cook Food", "Eat Foot"];
+let workItems = [];
 
 app.get("/", function (req, res) {
   today = new Date();
@@ -22,15 +23,28 @@ app.get("/", function (req, res) {
   let day = today.toLocaleDateString("en-US", options);
 
   res.render("list", {
-    kondOfDay: day,
+    listTitle: day,
     newListItems: items,
   });
 });
 
 app.post("/", function (req, res) {
   let item = req.body.newItem;
-  items.push(item);
-  res.redirect("/");
+
+  if (req.body.list === "Work") {
+    workItems.push(item);
+    res.redirect("/work");
+  } else {
+    items.push(item);
+    res.redirect("/");
+  }
+});
+
+app.get("/work", function (req, res) {
+  res.render("list", {
+    listTitle: "Work List",
+    newListItems: workItems,
+  });
 });
 
 app.listen(3000, function () {
