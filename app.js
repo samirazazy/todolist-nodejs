@@ -25,27 +25,28 @@ const item3 = new Item({ name: "Eat Food" });
 
 const defaultItems = [item1, item2, item3];
 
-Item.insertMany(defaultItems, (err) =>
-  err ? console.log(err) : console.log("done")
-);
-
 app.get("/", function (req, res) {
-  res.render("list", {
-    listTitle: "Today",
-    newListItems: items,
+  Item.find({}, (err, foundItems) => {
+    foundItems.length === 0
+      ? Item.insertMany(defaultItems, function (err) {
+          err ? console.log(err) : console.log("done succissfuly");
+          res.redirect("/");
+        })
+      : err
+      ? console.log(err)
+      : res.render("list", {
+          listTitle: date.getDate(),
+          newListItems: foundItems,
+        });
   });
 });
 
 app.post("/", function (req, res) {
-  let item = req.body.newItem;
+  let itemName = req.body.newItem;
+  const item = new Item({ name: itemName });
+  item.save();
 
-  if (req.body.list === "Work") {
-    workItems.push(item);
-    res.redirect("/work");
-  } else {
-    items.push(item);
-    res.redirect("/");
-  }
+  res.redirect("/");
 });
 
 app.get("/work", function (req, res) {
