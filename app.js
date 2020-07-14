@@ -37,18 +37,28 @@ app.get("/", function (req, res) {
       : err
       ? console.log(err)
       : res.render("list", {
-          listTitle: date.getDate(),
+          listTitle: "Today",
           newListItems: foundItems,
         });
   });
 });
 
 app.post("/", function (req, res) {
-  let itemName = req.body.newItem;
+  const itemName = req.body.newItem;
+  const listName = req.body.list;
+
   const item = new Item({ name: itemName });
 
-  item.save();
-  res.redirect("/");
+  if (listName === "Today") {
+    item.save();
+    res.redirect("/");
+  } else {
+    List.findOne({ name: listName }, function (err, foundList) {
+      foundList.items.push(item);
+      foundList.save();
+      res.redirect("/" + foundList.name);
+    });
+  }
 });
 
 app.post("/delete", function (req, res) {
