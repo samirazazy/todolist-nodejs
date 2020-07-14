@@ -16,8 +16,10 @@ mongoose.connect("mongodb://localhost:27017/todolistDB", {
 });
 
 const itemsSchema = { name: String };
-
 const Item = mongoose.model("item", itemsSchema);
+
+const listSchema = { name: String, items: [itemsSchema] };
+const List = mongoose.model("list", listSchema);
 
 const item1 = new Item({ name: "Pay Food" });
 const item2 = new Item({ name: "Cook Food" });
@@ -44,8 +46,8 @@ app.get("/", function (req, res) {
 app.post("/", function (req, res) {
   let itemName = req.body.newItem;
   const item = new Item({ name: itemName });
-  item.save();
 
+  item.save();
   res.redirect("/");
 });
 
@@ -58,10 +60,25 @@ app.post("/delete", function (req, res) {
   });
 });
 
-app.get("/work", function (req, res) {
-  res.render("list", {
-    listTitle: "Work List",
-    newListItems: workItems,
+app.get("/:listName", function (req, res) {
+  const listName = req.params.listName;
+
+  List.findOne({ name: listName }, function (err, foundList) {
+    if (!err) {
+      console.log(err);
+      if (!foundList) {
+        //Create a new list
+        const list = new List({ name: listName, items: defaultItems });
+        list.save();
+        res.redirect("/" + listName);
+      } else {
+        // Show existing list
+        res.render("list", {
+          listTitle: foundList.name,
+          newListItems: foundList.items,
+        });
+      }
+    }
   });
 });
 
